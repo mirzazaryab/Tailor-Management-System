@@ -73,7 +73,22 @@ python manage.py runserver
 ### 7. 💻 Open in Browser
 127.0.0.1:8000/
 
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
 ---
 
-Let me know if you'd like to add `.env` instructions, Docker support, or deployment steps (e.g., PythonAnywhere, Render, or Railway).
+## 🙌 Contributing
+
+Pull requests are welcome! If you'd like to contribute, open an issue to discuss what you want to improve.
+
+---
+
+## 👤 Author
+
+**Name**: Mirza Zaryab  
+**GitHub**: [@mirzazaryab](https://github.com/mirzazaryab)
+
