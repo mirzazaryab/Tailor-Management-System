@@ -1,0 +1,393 @@
+{% extends 'view/base.html' %}
+{% block title %}Daily Production & Wages Report{% endblock %}
+
+{% block content %}
+<div class="container py-4 animate__animated animate__fadeIn">
+
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-light text-dark mb-0">Daily Production & Wages <i class="fas fa-chart-bar text-primary ms-2"></i></h2>
+            <p class="text-muted lead mt-2 mb-0">Report for {{ date|date:"l, F d, Y" }}</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a href="{% url 'record_work' %}" class="btn btn-primary rounded-pill shadow-sm">
+                <i class="fas fa-plus-circle me-2"></i> Record New Work
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form method="GET" action="{% url 'daily_report' %}" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label for="date-filter" class="form-label fw-bold text-muted">Select Date</label>
+                    <input type="date" name="date" id="date-filter" class="form-control form-control-lg rounded-3" value="{{ date }}" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-5">
+                    <label for="tailor-filter" class="form-label fw-bold text-muted">Filter by Tailor</label>
+                    <select name="tailor" id="tailor-filter" class="form-select form-select-lg rounded-3" onchange="this.form.submit()">
+                        <option value="">All Tailors</option>
+                        {% for tailor_obj in tailors %}
+                            <option value="{{ tailor_obj.id }}" {% if selected_tailor_id|stringformat:"s" == tailor_obj.id|stringformat:"s" %}selected{% endif %}>
+                                {{ tailor_obj.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg rounded-3"><i class="fas fa-filter me-2"></i> Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Print Options -->
+    <div class="d-flex justify-content-end gap-2 mb-3 d-print-none">
+        <button class="btn btn-outline-primary rounded-pill shadow-sm" onclick="generatePDFReport()">
+            <i class="fas fa-file-pdf me-2"></i> Generate PDF
+        </button>
+        <button class="btn btn-outline-dark rounded-pill shadow-sm" onclick="printSection('print-area')">
+            <i class="fas fa-print me-2"></i> Print Report
+        </button>
+    </div>
+
+    <!-- Report Section -->
+    <div id="print-area">
+        <!-- Print Header -->
+        <div class="print-header text-center mb-4 d-none d-print-block">
+            <h1 class="company-name fw-bold">Afzal Traders</h1>
+            <p class="company-tagline">Premium Tailoring Services</p>
+            <hr>
+            <h3 class="report-title fw-semibold">Daily Production & Wages Report</h3>
+            <div class="report-meta">
+                <p><strong>Date:</strong> {{ date|date:"l, F d, Y" }}</p>
+                <p><strong>Generated:</strong> <span id="printDateTime"></span></p>
+                {% if selected_tailor_id %}
+                    <p><strong>Tailor:</strong> {{ daily_work_records.0.tailor.name }}</p>
+                {% endif %}
+            </div>
+            <hr>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white text-center p-3 rounded-3 h-100">
+                    <div class="card-body p-0">
+                        <i class="fas fa-cubes fa-2x mb-2 d-print-none"></i>
+                        <h6 class="mb-1 fw-semibold">Total Items</h6>
+                        <p class="fs-4 fw-bold mb-0">{{ total_items_produced }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white text-center p-3 rounded-3 h-100">
+                    <div class="card-body p-0">
+                        <i class="fas fa-rupee-sign fa-2x mb-2 d-print-none"></i>
+                        <h6 class="mb-1 fw-semibold">Total Earnings</h6>
+                        <p class="fs-4 fw-bold mb-0">Rs: {{ grand_total_earnings|default:"0.00" }}</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Detailed Records Table -->
+        <div class="card shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-print-none">
+                <h5 class="mb-0 fw-semibold text-dark">Detailed Production Records</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if daily_work_records %}
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle mb-0 print-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="ps-3">#</th>
+                                    <th>Product</th>
+                                    <th>Tailor</th>
+                                    <th class="text-center">Quantity</th>
+                                    <th class="text-end">Rate (Rs.)</th>
+                                    <th class="text-end">Total (Rs.)</th>
+                                    <th class="text-center d-print-none">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in daily_work_records %}
+                                <tr>
+                                    <td class="ps-3 fw-semibold">{{ forloop.counter }}</td>
+                                    <td>{{ record.product.name }}</td>
+                                    <td>{{ record.tailor.name }}</td>
+                                    <td class="text-center"><span class="badge bg-light text-dark">{{ record.quantity }}</span></td>
+                                    <td class="text-end">{{ record.rate }}</td>
+                                    <td class="text-end"><strong class="text-success">{{ record.total }}</strong></td>
+                                    <td class="text-center d-print-none"><small class="text-muted">{{ record.created_at|time:"H:i" }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-secondary">
+                                <tr>
+                                    <th colspan="3" class="text-end ps-3">Grand Total:</th>
+                                    <th class="text-center">{{ total_items_produced }}</th>
+                                    <th class="text-end">-</th>
+                                    <th class="text-end">Rs: {{ grand_total_earnings|default:"0.00" }}</th>
+                                    <th class="d-print-none"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-4x text-muted mb-4"></i>
+                        <p class="text-muted fs-5 mb-3">No production records found for this date.</p>
+                        <a href="{% url 'record_work' %}" class="btn btn-primary d-print-none">Add First Record</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tailor Performance Summary -->
+        <div class="card shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-print-none">
+                <h5 class="mb-0 fw-semibold text-dark">Tailor Performance Summary</h5>
+            </div>
+            <div class="card-body">
+                {% regroup daily_work_records by tailor as tailor_groups %}
+                <div class="row">
+                    {% for tailor_group in tailor_groups %}
+                    <div class="col-md-6 mb-3">
+                        <div class="tailor-card p-3 border rounded bg-light">
+                            <h6 class="fw-semibold text-primary">{{ tailor_group.grouper.name }}</h6>
+                            <div class="row text-center mt-2">
+                                <div class="col-4">
+                                    <strong class="d-block">{{ tailor_group.list|length }}</strong>
+                                    <small class="text-muted">Orders</small>
+                                </div>
+                                <div class="col-4">
+                                    <strong class="d-block">
+                                                {% with total=0 %}
+                                                    {% for item in tailor_group.list %}
+                                                        {{ item.quantity }}{% if not forloop.last %}+{% endif %}
+                                                        {% widthratio total|add:item.quantity 1 1 as total %}
+                                                    {% endfor %}
+                                                {% endwith %}
+                                            </strong>
+
+                                    <small class="text-muted">Items</small>
+                                </div>
+                                <div class="col-4">
+                                    <strong class="d-block text-success">
+                                        Rs: {% for item in tailor_group.list %}{{ item.total }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                                    </strong>
+                                    <small class="text-muted">Earnings</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+         <!-- Footer -->
+        <div class="print-footer text-center mt-4 d-none d-print-block">
+            <hr>
+            <p class="text-muted small mb-0">
+                This is a computer-generated report. For queries, contact: info@afzaltraders.com | +92-XXX-XXXXXXX
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5>Generating PDF Report...</h5>
+                <p class="text-muted mb-0">Please wait while we prepare your report</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    .tailor-card {
+        transition: transform 0.2s ease;
+    }
+
+    .tailor-card:hover {
+        transform: scale(1.02);
+    }
+
+.hover-scale {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-scale:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+    .signature-line {
+        border-bottom: 2px solid #000;
+        width: 200px;
+        margin: 0 auto 10px;
+    }
+
+    .signature-box {
+        padding: 20px;
+    }
+
+    @media print {
+        body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            font-size: 12px;
+        }
+
+        .d-print-none {
+            display: none !important;
+        }
+
+        .d-none.d-print-block {
+            display: block !important;
+        }
+
+        .print-header {
+            page-break-inside: avoid;
+            margin-bottom: 20px;
+        }
+
+        .company-name {
+            font-size: 28px;
+            color: #000 !important;
+        }
+
+        .report-title {
+            font-size: 20px;
+            color: #000 !important;
+        }
+
+        .card {
+            border: 1px solid #000 !important;
+            background: #fff !important;
+            color: #000 !important;
+            page-break-inside: avoid;
+            box-shadow: none !important;
+        }
+
+        .bg-primary, .bg-success, .bg-info, .bg-warning {
+            background: #f8f9fa !important;
+            color: #000 !important;
+            border: 2px solid #000 !important;
+        }
+
+        .table {
+            border-collapse: collapse !important;
+            font-size: 11px;
+        }
+
+        .print-table th,
+        .print-table td {
+            border: 1px solid #000 !important;
+            padding: 6px !important;
+        }
+
+        .print-table thead th {
+            background-color: #e9ecef !important;
+            color: #000 !important;
+            font-weight: bold;
+        }
+
+        .print-table tfoot th {
+            background-color: #f8f9fa !important;
+            color: #000 !important;
+            font-weight: bold;
+        }
+
+        .tailor-card {
+            border: 1px solid #000 !important;
+            background: #f8f9fa !important;
+        }
+
+        .signature-section {
+            page-break-inside: avoid;
+            margin-top: 30px;
+        }
+
+        @page {
+            margin: 0.8in;
+            size: A4;
+        }
+    }
+</style>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // Set current date and time for print
+    document.getElementById('printDateTime').textContent = new Date().toLocaleString();
+
+    // PDF generation function
+    async function generatePDFReport() {
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+
+        try {
+            const printContent = document.getElementById('print-area');
+
+            const canvas = await html2canvas(printContent, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jsPdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+
+            const imgWidth = 210;
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            const date = new Date().toISOString().split('T')[0];
+            pdf.save(`daily_report_${date}.pdf`);
+
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Error generating PDF. Please try again.');
+        } finally {
+            loadingModal.hide();
+        }
+    }
+
+    // Traditional print function
+    function printSection(sectionId) {
+        const printContent = document.getElementById(sectionId);
+        const originalContent = document.body.innerHTML;
+
+        document.body.innerHTML = printContent.innerHTML;
+        window.print();
+        document.body.innerHTML = originalContent;
+        location.reload();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Work Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { font-size: 12px; }
+        .table th, .table td { vertical-align: middle !important; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .footer { margin-top: 30px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h3>{{ tailor.name|default:"All Tailors" }} - Work Report</h3>
+            <p>Date: {{ date }}</p>
+        </div>
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Tailor</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ record.tailor.name }}</td>
+                    <td>{{ record.product.name }}</td>
+                    <td>{{ record.quantity }}</td>
+                    <td>{{ record.rate }}</td>
+                    <td>{{ record.total }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            Total Amount: Rs {{ total_amount }}
+        </div>
+    </div>
+</body>
+</html>
