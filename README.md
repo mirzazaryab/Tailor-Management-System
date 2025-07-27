@@ -85,6 +85,14 @@ python manage.py runserver
 ```
 http://127.0.0.1:8000/
 ```
+## 🔄 One-Click Local Run
+
+To run this Django app locally without installing anything:
+
+1. Clone or download this repo
+2. Run `start.bat` (Windows) to launch the app locally
+3. The app will open in your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000)
+
 
 ---
 
