@@ -1,0 +1,210 @@
+{% extends 'view/base.html' %}
+{% block title %}Record Work{% endblock %}
+{% block content %}
+<div class="container py-4 animate__animated animate__fadeIn">
+  <div class="card shadow-lg rounded-4 border-0">
+    <div class="card-header bg-primary text-white py-4 rounded-top-4 d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-pencil-alt fa-lg me-3"></i>
+        <h4 class="mb-0 fw-bold">Record Daily Production</h4>
+      </div>
+      <a href="{% url 'daily_report' %}" class="btn btn-outline-light btn-sm rounded-pill">
+          View Daily Report <i class="fas fa-chart-bar ms-2"></i>
+      </a>
+    </div>
+    <div class="card-body p-4 p-md-5">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row g-4">
+          {# Row 1: Tailor and Product Selects #}
+          <div class="col-md-6">
+            <label for="tailor-select" class="form-label fw-bold text-muted">Select Tailor <span class="text-danger">*</span></label>
+            <select name="tailor" id="tailor-select" class="form-select form-select-lg rounded-3" required>
+              <option value="">-- Select Tailor --</option>
+              {% for tailor in tailors %}
+              <option value="{{ tailor.id }}">{{ tailor.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="product-select" class="form-label fw-bold text-muted">Select Product <span class="text-danger">*</span></label>
+            <select name="product" id="product-select" class="form-select form-select-lg rounded-3" required>
+              <option value="">-- Select a Product --</option>
+              {% for product in products %}
+              <option value="{{ product.id }}" data-tailor-rate="{{ product.tailor_payment_rate }}">{{ product.name }}</option> {# IMPORTANT: data-tailor-rate #}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6 mb-4">
+              <label for="customer-name" class="form-label fw-bold text-muted">Customer Name <span class="text-danger">*</span></label>
+              <input type="text" id="customer-name" name="customer_name" class="form-control form-control-lg rounded-3" placeholder="Enter customer name" required>
+          </div>
+          <div class="col-md-6">
+            <label for="product-rate" class="form-label fw-bold text-muted">Tailor Payment Rate (Rs.)</label> {# NEW LABEL #}
+            <input type="text" id="product-rate" name="rate" class="form-control form-control-lg rounded-3 bg-light" disabled placeholder="Auto-filled from product selection">
+          </div>
+
+          {# Row 3: Quantity and Date #}
+          <div class="col-md-6">
+            <label for="quantity-input" class="form-label fw-bold text-muted">Quantity <span class="text-danger">*</span></label>
+            <input type="number" id="quantity-input" name="quantity" class="form-control form-control-lg rounded-3" required placeholder="Enter quantity produced" min="1">
+          </div>
+          <div class="col-md-6">
+            <label for="date-input" class="form-label fw-bold text-muted">Date <span class="text-danger">*</span></label>
+            <input type="date" id="date-input" name="date" class="form-control form-select-lg rounded-3" value="{{ today }}" required>
+          </div>
+        </div>
+        <div class="mt-5 d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg">
+            <i class="fas fa-check-circle me-2"></i> Submit Work
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if messages %}
+  <div class="mt-4 messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 shadow-md border-0 py-3 px-4" role="alert">
+      <i class="fas fa-info-circle me-2"></i>
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<style>
+    /* Ensure consistent styling with your base.html and other pages */
+    .card {
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.08) !important;
+    }
+    .card-header {
+        background-color: var(--bs-primary) !important; /* Use primary color from root */
+        color: var(--bs-white) !important;
+    }
+    .card-header.bg-dark {
+        background-color: var(--primary-dark) !important;
+    }
+    .card-header.bg-info {
+        background-color: var(--bs-info) !important;
+    }
+    .card-header.bg-success {
+        background-color: var(--bs-success) !important;
+    }
+    .form-control-lg, .form-select-lg, .form-control {
+        border-radius: 0.5rem; /* Slightly larger rounded corners for inputs */
+    }
+    .form-label {
+        font-weight: 600; /* Semibold for labels */
+        color: var(--text-dark) !important; /* Dark text for labels */
+    }
+    .btn-primary {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+    }
+    .btn-dark {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+    }
+    .btn-dark:hover {
+        background-color: var(--bs-dark);
+        border-color: var(--bs-dark);
+    }
+    .btn-info {
+        background-color: var(--bs-info);
+        border-color: var(--bs-info);
+    }
+    .btn-info:hover {
+        background-color: #117a8b; /* Darker info */
+        border-color: #117a8b;
+    }
+    .btn-success {
+        background-color: var(--bs-success);
+        border-color: var(--bs-success);
+    }
+    .btn-success:hover {
+        background-color: #1e7e34; /* Darker success */
+        border-color: #1e7e34;
+    }
+    .btn-outline-light {
+        color: var(--bs-white);
+        border-color: rgba(255,255,255,0.5);
+    }
+    .btn-outline-light:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: var(--bs-white);
+    }
+    .badge {
+        font-weight: 500;
+    }
+    .table-borderless th, .table-borderless td {
+        border-top: none;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f0f2f5;
+    }
+    .list-group-item {
+        border-color: rgba(0,0,0,0.05); /* Lighter borders for list group */
+    }
+    .list-group-item:first-child { border-top-left-radius: 0.25rem; border-top-right-radius: 0.25rem; }
+    .list-group-item:last-child { border-bottom-left-radius: 0.25rem; border-bottom-right-radius: 0.25rem; }
+
+    /* Star rating */
+    .fa-star {
+        font-size: 0.9rem;
+    }
+
+    /* Messages styling for consistency */
+    .alert-success { background-color: #d1e7dd; border-color: #badbcc; color: #0f5132; }
+    .alert-danger { background-color: #f8d7da; border-color: #f5c2c7; color: #842029; }
+    .alert-warning { background-color: #fff3cd; border-color: #ffecb5; color: #664d03; }
+    .alert-info { background-color: #cff4fc; border-color: #b6effb; color: #055160; }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const productSelect = document.getElementById("product-select");
+    const rateInput = document.getElementById("product-rate"); // This is now for Tailor Payment Rate
+
+    // Function to update rate input based on selected product's tailor payment rate
+    function updateRateInput() {
+      const selectedOption = productSelect.options[productSelect.selectedIndex];
+      const tailorRate = selectedOption.getAttribute("data-tailor-rate"); // Get the tailor rate
+      rateInput.value = tailorRate || "";
+    }
+
+    // Initial check in case a product is pre-selected
+    if (productSelect.value) {
+      updateRateInput();
+    }
+
+    // Event listener for product selection change
+    productSelect.addEventListener("change", updateRateInput);
+
+    // Optional: Auto-select current date for the date input
+    const dateInput = document.getElementById('date-input');
+    if (!dateInput.value) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${year}-${month}-${day}`;
+    }
+
+    // Optional: Scroll to messages if they exist on page load
+    const messagesDiv = document.querySelector('.messages');
+    if (messagesDiv && messagesDiv.children.length > 0) {
+        messagesDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+</script>
+{% endblock %}

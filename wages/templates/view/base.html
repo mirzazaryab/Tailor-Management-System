@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Tailor System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS - CORRECTED integrity attribute -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- Font Awesome for Icons - CORRECTED integrity attribute -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Google Fonts - Inter for a modern, professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Animate.css for subtle entrance animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        :root {
+            --primary-dark: #212529; /* Dark background for navbar/footer */
+            --accent-color: #ffc107; /* Your existing yellow accent */
+            --light-bg: #f8f9fa; /* Very light, almost white body background */
+            --text-dark: #343a40; /* Darker text for content */
+            --text-muted: #6c757d; /* Standard muted text */
+
+            /* Standard Bootstrap Colors re-aliased as variables for consistent usage */
+            --bs-blue: #007bff;
+            --bs-indigo: #6610f2;
+            --bs-purple: #6f42c1;
+            --bs-pink: #e83e8c;
+            --bs-red: #dc3545;
+            --bs-orange: #fd7e14;
+            --bs-yellow: #ffc107; /* Matches accent-color, good */
+            --bs-green: #28a745;
+            --bs-teal: #20c997;
+            --bs-cyan: #17a2b8;
+
+            --bs-primary: var(--bs-blue); /* Base primary color */
+            --bs-secondary: var(--bs-gray-600, #6c757d); /* Fallback for secondary */
+            --bs-success: var(--bs-green);
+            --bs-info: var(--bs-cyan);
+            --bs-warning: var(--bs-yellow);
+            --bs-danger: var(--bs-red);
+            --bs-light: var(--light-bg);
+            --bs-dark: var(--primary-dark);
+
+            --bs-white: #fff; /* Explicit white */
+        }
+
+        /* Ensure consistent box model across all elements */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            background-color: var(--light-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased; /* Smoother fonts */
+            -moz-osx-font-smoothing: grayscale; /* Smoother fonts */
+        }
+
+        .content-wrapper {
+            flex: 1;
+            padding-top: 2.5rem;
+            padding-bottom: 3rem;
+        }
+
+        /* --- Navbar Styles --- */
+        .navbar {
+            background-color: var(--primary-dark) !important;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            padding-top: 1.25rem;
+            padding-bottom: 1.25rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-color) !important;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand i {
+            color: var(--bs-white);
+            margin-right: 0.75rem;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: var(--bs-white) !important;
+        }
+        .navbar-brand:hover i {
+             color: var(--accent-color);
+        }
+
+
+        .nav-link {
+            font-size: 1.05rem;
+            font-weight: 500;
+            margin-left: 1.5rem;
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: color 0.3s ease, transform 0.2s ease;
+            position: relative;
+            padding-left: 0.25rem;
+            padding-right: 0.25rem;
+            cursor: pointer;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color) !important;
+            transform: translateY(-3px);
+        }
+
+        /* Active Nav Link Indicator */
+        .nav-link.active {
+            color: var(--accent-color) !important;
+            font-weight: 600;
+            transform: translateY(-1px);
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+         .nav-link:not(.active)::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0%;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .nav-link:not(.active):hover::after {
+            width: 80%;
+            opacity: 1;
+        }
+
+
+        /* Dropdown Menu Styles */
+        .navbar-nav .dropdown-menu {
+            background-color: var(--primary-dark);
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            padding: 0.5rem 0;
+        }
+        .navbar-nav .dropdown-item {
+            color: rgba(255, 255, 255, 0.75);
+            padding: 0.75rem 1.5rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .navbar-nav .dropdown-item:hover,
+        .navbar-nav .dropdown-item:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--accent-color);
+        }
+        .navbar-nav .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Navbar Toggler */
+        .navbar-toggler {
+            border: none;
+        }
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+
+        /* --- Footer Styles --- */
+        footer {
+            background-color: var(--primary-dark);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 1.75rem 0;
+            text-align: center;
+            font-size: 0.875rem;
+            box-shadow: 0 -6px 20px rgba(0,0,0,0.2);
+        }
+        footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        footer a:hover {
+            color: var(--bs-white);
+            text-decoration: underline;
+        }
+        footer .fab {
+            font-size: 1.4rem;
+            transition: color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+        footer .fab:hover {
+            color: var(--bs-white);
+            transform: translateY(-2px);
+        }
+
+        /* --- Page Loader Styles --- */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .page-loader.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .spinner-border {
+            width: 3.75rem;
+            height: 3.75rem;
+            color: var(--accent-color) !important;
+            border-width: 0.4em;
+        }
+
+        /* --- General Link Styling in Content (for consistency) --- */
+        main a {
+            color: var(--bs-primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        main a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    {# Page Loader HTML #}
+    <div class="page-loader" id="pageLoader">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark px-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-screwdriver-wrench"></i> Tailor Unit System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {# Dashboard Link #}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.view_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+
+                    {# Tailors Link - More precise active logic #}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.view_name == 'add_tailor' or request.resolver_match.view_name == 'delete_tailor' or request.resolver_match.view_name == 'tailor_workload' %}active{% endif %}" href="{% url 'add_tailor' %}">
+                            <i class="fas fa-user-tie"></i> Tailors
+                        </a>
+                    </li>
+                    {# Products Link - More precise active logic #}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.view_name == 'add_product' or request.resolver_match.view_name == 'edit_product' or request.resolver_match.view_name == 'delete_product' %}active{% endif %}" href="{% url 'add_product' %}">
+                            <i class="fas fa-tags"></i> Products
+                        </a>
+                    </li>
+                    {# Record Work Link #}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.view_name == 'record_work' %}active{% endif %}" href="{% url 'record_work' %}">
+                            <i class="fas fa-clipboard-list"></i> Record Work
+                        </a>
+                    </li>
+                    {#Daily Work Report Link #}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.view_name == 'daily_report' %}active{% endif %}" href="{% url 'daily_report' %}">
+                            <i class="fas fa-industry"></i> Daily Production
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container content-wrapper">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        &copy; <span id="current-year"></span> <strong>Tailor Management System</strong>. All rights reserved. | Developed by <a href="https://github.com/mirzazaryab" target="_blank" rel="noopener noreferrer">Zebi</a>.
+        <div class="mt-2">
+            <a href="https://www.github.com/mirzazaryab" class="text-white mx-2" aria-label="Github Profile"><i class="fab fa-github"></i></a>
+            <a href="https://www.instagram.com/_mirza_zaryab" class="text-white mx-2" aria-label="Instagram Profile"><i class="fab fa-instagram"></i></a>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper - CORRECTED integrity attribute -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Set dynamic copyright year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Page Loader Logic
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('pageLoader');
+            if (loader) {
+                setTimeout(() => {
+                    loader.classList.remove('show');
+                    setTimeout(() => loader.style.display = 'none', 500); // Match CSS transition duration
+                }, 100); // Small delay to ensure content is ready to be painted
+            }
+        });
+
+        // Optional: Show loader on internal link clicks for full page reloads
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(event) {
+                // Check if it's an internal link and not a hash link, dropdown toggle, or external link
+                if (this.href && this.href.startsWith(window.location.origin) && !this.getAttribute('data-bs-toggle') && this.getAttribute('target') !== '_blank') {
+                    const loader = document.getElementById('pageLoader');
+                    if (loader) {
+                        loader.style.display = 'flex'; // Ensure display is not 'none' for transition
+                        loader.classList.add('show');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

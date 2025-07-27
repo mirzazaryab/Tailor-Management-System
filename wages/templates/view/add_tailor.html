@@ -1,0 +1,189 @@
+{% extends 'view/base.html' %}
+{% block title %}Add & Manage Tailors{% endblock %}
+
+{% block content %}
+<div class="container py-4 animate__animated animate__fadeIn">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-light text-dark mb-0">Manage Tailors <i class="fas fa-users-cog text-success ms-2"></i></h2>
+            <p class="text-muted lead mt-2 mb-0">Add new Tailor or view existing ones.</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <button id="toggleTailorFormBtn" class="btn btn-success rounded-pill shadow-sm">
+                <i class="fas fa-plus me-2"></i> Add New Tailor
+            </button>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 shadow-md border-0 py-3 px-4" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="row justify-content-center mb-5 d-none" id="tailorFormWrapper">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success text-white py-3 rounded-top-4 d-flex align-items-center">
+                    <i class="fas fa-user-plus fa-lg me-3"></i>
+                    <h4 class="mb-0 fw-bold">Add New Tailor</h4>
+                </div>
+                <div class="card-body bg-white p-4 p-md-5">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="tailor-name" class="form-label fw-bold text-muted">Tailor Name <span class="text-danger">*</span></label>
+                            <input type="text" id="tailor-name" name="name" class="form-control form-control-lg rounded-3" placeholder="e.g. Muhammad Ali" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="tailor-phone" class="form-label fw-bold text-muted">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" id="tailor-phone" name="phone" class="form-control form-control-lg rounded-3" placeholder="03XXXXXXXXX" required pattern="[0-9]{11}" title="Phone number must be 11 digits">
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill shadow-lg py-3">
+                                <i class="fas fa-user-plus me-2"></i> Add Tailor
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Tailors -->
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card shadow-sm rounded-4 hover-lift">
+                <div class="card-header bg-white border-bottom-0 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold text-dark">Existing Tailors ({{ tailors.paginator.count }})</h5>
+                    <form method="GET" class="d-flex" action="{% url 'add_tailor' %}">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control rounded-start-pill border-end-0" placeholder="Search tailors..." value="{{ search_query }}">
+                            <button class="btn btn-outline-secondary rounded-end-pill" type="submit"><i class="fas fa-search"></i></button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    {% if tailors %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-borderless align-middle mb-0">
+                                <thead class="border-bottom">
+                                    <tr>
+                                        <th class="text-muted fw-normal ps-4" style="width: 80px;">S.No.</th>
+                                        <th class="text-muted fw-normal">Tailor Name</th>
+                                        <th class="text-muted fw-normal text-end pe-4">Phone Number</th>
+                                        <th class="text-muted fw-normal text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tailor in tailors %}
+                                    <tr>
+                                        <td class="ps-4 text-muted">{{ forloop.counter|add:tailors.start_index|add:"-1" }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar rounded-circle d-flex align-items-center justify-content-center me-3 bg-success text-white" style="width: 40px; height: 40px;">
+                                                    {{ tailor.name|first|upper }}
+                                                </div>
+                                                <span class="fw-semibold text-dark">{{ tailor.name }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <span class="fw-semibold text-muted">{{ tailor.phone }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" onclick="confirmDelete({{ tailor.id }}, '{{ tailor.name }}')" title="Delete Tailor">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if tailors.has_other_pages %}
+                        <nav class="mt-4 px-4 pb-3">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% if tailors.has_previous %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ tailors.previous_page_number }}&search={{ search_query }}">&laquo;</a></li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                                {% endif %}
+
+                                {% for i in tailors.paginator.page_range %}
+                                    {% if tailors.number == i %}
+                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                    {% else %}
+                                        <li class="page-item"><a class="page-link" href="?page={{ i }}&search={{ search_query }}">{{ i }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if tailors.has_next %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ tailors.next_page_number }}&search={{ search_query }}">&raquo;</a></li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-user-friends fa-4x text-muted mb-4"></i>
+                            <p class="text-muted fs-5 mb-0">No tailors found. Use the form above to add your first tailor!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    .avatar {
+        font-size: 1rem;
+        font-weight: bold;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.1)!important;
+    }
+</style>
+
+<!-- Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formWrapper = document.getElementById("tailorFormWrapper");
+        const toggleBtn = document.getElementById("toggleTailorFormBtn");
+
+        function toggleForm() {
+            if (formWrapper.classList.contains("d-none")) {
+                formWrapper.classList.remove("d-none");
+                toggleBtn.innerHTML = '<i class="fas fa-times me-2"></i> Hide Form';
+                toggleBtn.classList.replace('btn-success', 'btn-secondary');
+                formWrapper.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                formWrapper.classList.add("d-none");
+                toggleBtn.innerHTML = '<i class="fas fa-plus me-2"></i> Add New Tailor';
+                toggleBtn.classList.replace('btn-secondary', 'btn-success');
+            }
+        }
+
+        toggleBtn.addEventListener("click", toggleForm);
+    });
+
+    function confirmDelete(id, name) {
+        if (confirm(`Are you sure you want to delete "${name}"?`)) {
+            window.location.href = `/delete-tailor/${id}/`;
+        }
+    }
+</script>
+{% endblock %}
